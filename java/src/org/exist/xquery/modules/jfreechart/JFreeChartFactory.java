@@ -28,8 +28,14 @@ import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
+
 import org.apache.log4j.Logger;
+
 import org.exist.xquery.XPathException;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -43,6 +49,7 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.MultiplePiePlot;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.SpiderWebPlot;
+import org.jfree.chart.plot.SunburstPlot;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
@@ -50,6 +57,7 @@ import org.jfree.chart.renderer.xy.XYDotRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.data.xml.DatasetReader;
 import org.jfree.data.xml.XYDatasetReader;
@@ -90,7 +98,7 @@ public class JFreeChartFactory {
         XYZDataset XYZDataset = null;
 
         try {
-            if ("PieChart".equals(chartType) || "PieChart3D".equals(chartType) || "RingChart".equals(chartType)) {
+            if ("PieChart".equals(chartType) || "PieChart3D".equals(chartType) || "RingChart".equals(chartType)  || "SunburstChart".equals(chartType)) {
                 logger.debug("Reading XML PieDataset");
                 pieDataset = DatasetReader.readPieDatasetFromXML(is);
 
@@ -197,6 +205,40 @@ public class JFreeChartFactory {
                 chart = ChartFactory.createRingChart(
                         conf.getTitle(), pieDataset,
                         conf.isGenerateLegend(), conf.isGenerateTooltips(), conf.isGenerateUrls());
+
+                setPieChartParameters(chart, conf);
+                break;
+
+            case "SunburstChart":
+		Map emap = new HashMap<Comparable, PieDataset>();
+		DefaultPieDataset eds = new DefaultPieDataset();
+		eds.setValue("1.1", new Double(12));
+		eds.setValue("1.2", new Double(8));
+		eds.setValue("1.3", new Double(4));
+		emap.put("1", eds);
+
+		eds = new DefaultPieDataset();
+		eds.setValue("2.1", new Double(6));
+		eds.setValue("2.2", new Double(10));
+		eds.setValue("2.3", new Double(14));
+		emap.put("2", eds);
+
+		eds = new DefaultPieDataset();
+		eds.setValue("2.3.1", new Double(3));
+		eds.setValue("2.3.2", new Double(5));
+		eds.setValue("2.3.3", new Double(7));
+		emap.put("2.3", eds);
+
+		eds = new DefaultPieDataset();
+		eds.setValue("3.1", new Double(9));
+		eds.setValue("3.3", new Double(11));
+		eds.setValue("3.3", new Double(13));
+		emap.put("3", eds);
+
+		SunburstPlot sbPlot = new SunburstPlot(pieDataset, emap);
+		sbPlot.setLabelGenerator(null);
+		chart = new JFreeChart(
+				       conf.getTitle(), JFreeChart.DEFAULT_TITLE_FONT, sbPlot, conf.isGenerateLegend());
 
                 setPieChartParameters(chart, conf);
                 break;

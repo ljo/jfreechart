@@ -17,6 +17,8 @@
     <property name="web.dir" value="web"/>
     <property name="config.dir" value="config"/>
 
+    <property name="server.url" value="http://demo.exist-db.org/exist/apps/public-repo/public/"/>
+
     <setproxy nonproxyhosts="${proxy.nonproxyhosts}" proxyhost="${proxy.host}"
         proxyport="${proxy.port}" proxypassword="${proxy.password}" proxyuser="${proxy.user}"
         socksproxyhost="${proxy.socks.host}" socksproxyport="${proxy.socks.port}"/>
@@ -171,5 +173,19 @@
             <fileset dir="${java.libs}" includes="*.jar" excludes="*sources*,*javadoc*"/>
         </copy>
     </target>
+
+    <target name="upload">
+      <input message="Enter password:" addproperty="server.pass" defaultvalue="">
+        <handler type="secure"/>
+      </input>
+      <property name="xar-lib" value="${module.name}-${module.version}.xar"/>
+      <property name="xar-app" value="${module.name}-showcase-${module.version}.xar"/>
+      <exec executable="curl">
+        <arg line="-T ${dist.dir}/${xar-lib} -u admin:${server.pass} ${server.url}/${xar-lib}"/>
+      </exec>
+      <exec executable="curl">
+        <arg line="-T ${dist.dir}/${xar-app} -u admin:${server.pass} ${server.url}/${xar-app}"/>
+      </exec>
+  </target>
 
 </project>
